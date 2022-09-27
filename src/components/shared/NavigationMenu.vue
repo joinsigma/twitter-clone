@@ -1,6 +1,6 @@
 <script setup>
-import { HomeIcon as OHomeIcon, HashtagIcon as OHashtagIcon, BellIcon as OBellIcon, EnvelopeIcon as OEnvelopeIcon, UserIcon as OUserIcon, EllipsisHorizontalCircleIcon as OEllipsisHorizontalCircleIcon } from '@heroicons/vue/24/outline'
-import { HomeIcon as SHomeIcon, HashtagIcon as SHashtagIcon, BellIcon as SBellIcon, EnvelopeIcon as SEnvelopeIcon, UserIcon as SUserIcon, EllipsisHorizontalCircleIcon as SEllipsisHorizontalCircleIcon } from '@heroicons/vue/24/solid'
+import { HomeIcon as OHomeIcon, HashtagIcon as OHashtagIcon, BellIcon as OBellIcon, EnvelopeIcon as OEnvelopeIcon, BookmarkIcon as OBookmarkIcon, DocumentTextIcon as ODocumentTextIcon, UserIcon as OUserIcon, EllipsisHorizontalCircleIcon as OEllipsisHorizontalCircleIcon } from '@heroicons/vue/24/outline'
+import { HomeIcon as SHomeIcon, HashtagIcon as SHashtagIcon, BellIcon as SBellIcon, EnvelopeIcon as SEnvelopeIcon, BookmarkIcon as SBookmarkIcon, DocumentTextIcon as SDocumentTextIcon, UserIcon as SUserIcon, EllipsisHorizontalCircleIcon as SEllipsisHorizontalCircleIcon } from '@heroicons/vue/24/solid'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -40,6 +40,24 @@ const menus = ref([
             solid: SEnvelopeIcon,
         },
         name: 'Messages',
+        href: '#',
+        current: false,
+    },
+    {
+        icon: {
+            outline: OBookmarkIcon,
+            solid: SBookmarkIcon,
+        },
+        name: 'Bookmarks',
+        href: '#',
+        current: false,
+    },
+    {
+        icon: {
+            outline: ODocumentTextIcon,
+            solid: SDocumentTextIcon,
+        },
+        name: 'Lists',
         href: '#',
         current: false,
     },
