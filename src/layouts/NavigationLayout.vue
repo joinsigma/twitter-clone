@@ -15,7 +15,7 @@ import { EllipsisHorizontalIcon } from '@heroicons/vue/24/outline'
                 <NavigationMenu />
 
                 <div class="w-[85%] my-2 flex">
-                    <button class="bg-twitter flex-1 min-w-[52px] min-h-[52px] px-8 rounded-full text-white font-bold">Tweet</button>
+                    <button class="bg-twitter hover:bg-[#1a8cd8] flex-1 min-w-[52px] min-h-[52px] px-8 rounded-full text-white font-bold">Tweet</button>
                 </div>
             </div>
 

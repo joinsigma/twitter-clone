@@ -42,13 +42,13 @@ const boxIcons = ref([
             </div>
 
             <div class="flex items-center justify-between">
-                <ul class="flex items-center space-x-3">
-                    <li v-for="{ name, icon } in boxIcons" :key="name">
+                <ul class="flex items-center space-x-2 -ml-2">
+                    <li class="rounded-full hover:bg-[#1d9bf0]/10 p-2 cursor-pointer" v-for="{ name, icon } in boxIcons" :key="name">
                         <component class="h-5 w-5 text-twitter" :is="icon" />
                     </li>
                 </ul>
 
-                <button class="bg-twitter px-4 py-2 rounded-full text-white font-bold text-sm">Tweet</button>
+                <button class="bg-twitter hover:bg-[#1a8cd8] px-4 py-2 rounded-full text-white font-bold text-sm">Tweet</button>
             </div>
         </div>
     </div>
