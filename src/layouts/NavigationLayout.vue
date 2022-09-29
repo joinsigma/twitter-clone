@@ -45,7 +45,7 @@ import { EllipsisHorizontalIcon, PlusIcon } from '@heroicons/vue/24/outline'
         </main>
 
         <!-- Right Sidebar -->
-        <div class="hidden lg:block w-[275px] px-3 py-2">
+        <div class="hidden lg:block overflow-y-auto h-screen w-[375px] px-3 py-2">
             <slot name="sidebar"></slot>
         </div>
     </div>
