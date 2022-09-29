@@ -1,0 +1,48 @@
+<script setup>
+import TwitterLogo from '@/components/icons/TwitterLogo.vue'
+import NavigationMenu from '@/components/shared/NavigationMenu.vue'
+import { EllipsisHorizontalIcon } from '@heroicons/vue/24/outline'
+</script>
+
+<template>
+    <div class="flex min-h-screen max-w-7xl mx-auto divide-x divide-[#eff3f4]">
+        <header class="h-screen w-[275px] flex flex-col justify-between px-3 py-2">
+            <div>
+                <div class="w-[52px] h-[52px] cursor-pointer rounded-full hover:bg-[#1d9bf0]/10 flex justify-center items-center">
+                    <TwitterLogo />
+                </div>
+
+                <NavigationMenu />
+
+                <div class="w-[85%] my-2 flex">
+                    <button class="bg-twitter flex-1 min-w-[52px] min-h-[52px] px-8 rounded-full text-white font-bold">Tweet</button>
+                </div>
+            </div>
+
+            <div class="flex items-center hover:bg-[#0f1419]/10 rounded-full cursor-pointer p-3 space-x-3">
+                <div class="h-10 w-10">
+                    <img class="h-full w-full rounded-full" src="https://yeeqiang.me/avatar.jpeg" alt="" />
+                </div>
+
+                <div class="flex-1">
+                    <p class="text-[#0f1419] font-bold text-[15px]">Yap Yee Qiang</p>
+                    <p class="text-[#536471] text-[15px]">@yapyeeqiang</p>
+                </div>
+
+                <div>
+                    <EllipsisHorizontalIcon class="h-6 w-6" />
+                </div>
+            </div>
+        </header>
+
+        <!-- Middle Content -->
+        <main class="flex-1 overflow-y-auto h-screen">
+            <slot></slot>
+        </main>
+
+        <!-- Right Sidebar -->
+        <div class="w-[275px] px-3 py-2">
+            <slot name="sidebar"></slot>
+        </div>
+    </div>
+</template>
