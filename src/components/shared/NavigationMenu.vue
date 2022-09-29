@@ -93,7 +93,7 @@ const navigateTo = ({ name, href }) => {
     <nav>
         <div :key="index" v-for="({ name, icon, href, current }, index) in menus" @click="navigateTo({ name, href })" class="flex justify-center items-center rounded-full p-3 hover:bg-[#0f1419]/10 max-w-fit cursor-pointer">
             <component class="w-7 h-7" :is="icon[current ? 'solid' : 'outline']" />
-            <div class="ml-5 mr-4 text-lg">
+            <div class="hidden md:block ml-5 mr-4 text-lg">
                 <p :class="[current && 'font-bold']">{{ name }}</p>
             </div>
         </div>
