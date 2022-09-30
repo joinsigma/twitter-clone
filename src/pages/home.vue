@@ -17,7 +17,9 @@ import Sidebar from '../components/home/Sidebar.vue'
                 </div>
             </div>
 
-            <TweetBox />
+            <div class="p-4 flex border-b border-[#eff3f4]">
+                <TweetBox />
+            </div>
 
             <TweetList />
         </template>
