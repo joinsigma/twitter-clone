@@ -2,6 +2,21 @@
 import TwitterLogo from '@/components/icons/TwitterLogo.vue'
 import NavigationMenu from '@/components/shared/NavigationMenu.vue'
 import { EllipsisHorizontalIcon, PlusIcon } from '@heroicons/vue/24/outline'
+import { signOut } from 'firebase/auth'
+import { auth } from '../../firebase'
+import { useUser } from '../stores/user'
+
+const userStore = useUser()
+
+async function logOut() {
+    try {
+        await signOut(auth)
+    } catch (error) {
+        console.log(error)
+    } finally {
+        userStore.user = null
+    }
+}
 </script>
 
 <template>
@@ -23,13 +38,13 @@ import { EllipsisHorizontalIcon, PlusIcon } from '@heroicons/vue/24/outline'
                 </div>
             </div>
 
-            <div class="flex items-center hover:bg-[#0f1419]/10 rounded-full cursor-pointer p-3 space-x-3">
+            <div @click.prevent="logOut" class="flex items-center hover:bg-[#0f1419]/10 rounded-full cursor-pointer p-3 space-x-3">
                 <div class="h-10 w-10">
-                    <img class="h-full w-full rounded-full" src="https://yeeqiang.me/avatar.jpeg" alt="" />
+                    <img class="h-full w-full rounded-full" :src="userStore?.user?.photoURL" alt="Avatar" />
                 </div>
 
                 <div class="hidden md:block flex-1">
-                    <p class="text-[#0f1419] font-bold text-[15px]">Yap Yee Qiang</p>
+                    <p class="text-[#0f1419] font-bold text-[15px]">{{ userStore?.user?.name }}</p>
                     <p class="text-[#536471] text-[15px]">@yapyeeqiang</p>
                 </div>
 

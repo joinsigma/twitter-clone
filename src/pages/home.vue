@@ -4,6 +4,30 @@ import TweetBox from '../components/tweet/TweetBox.vue'
 import TweetList from '../components/tweet/TweetList.vue'
 import { SparklesIcon } from '@heroicons/vue/24/outline'
 import Sidebar from '../components/home/Sidebar.vue'
+import { onAuthStateChanged } from '@firebase/auth'
+import { auth } from '../../firebase'
+import { useUser } from '@/stores/user'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+onAuthStateChanged(auth, (user) => {
+    if (user === null) {
+        router.push({
+            name: 'Sign In',
+        })
+        return
+    }
+
+    const { displayName, email, photoURL } = user
+    const userStore = useUser()
+
+    userStore.user = {
+        name: displayName,
+        email,
+        photoURL,
+    }
+})
 </script>
 
 <template>
