@@ -1,15 +1,50 @@
 <script setup>
-import NavigationLayout from '@/layouts/NavigationLayout.vue'
-import TweetBox from '../components/tweet/TweetBox.vue'
-import TweetList from '../components/tweet/TweetList.vue'
-import { SparklesIcon } from '@heroicons/vue/24/outline'
-import Sidebar from '../components/home/Sidebar.vue'
-import { onAuthStateChanged } from '@firebase/auth'
-import { auth } from '../../firebase'
-import { useUser } from '@/stores/user'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import NavigationLayout from '@/layouts/NavigationLayout.vue'
+import TweetBox from '@/components/tweet/TweetBox.vue'
+import TweetList from '@/components/tweet/TweetList.vue'
+import Sidebar from '@/components/home/Sidebar.vue'
+import { useUser } from '@/stores/user'
+import { formatDate } from '@/utils/date'
+import { SparklesIcon } from '@heroicons/vue/24/outline'
+import { onAuthStateChanged } from 'firebase/auth'
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore'
+import { auth, db } from '../../firebase'
 
+const tweets = ref([])
 const router = useRouter()
+
+onMounted(async () => {
+    tweets.value = []
+    const tweetsRef = collection(db, 'tweets')
+    const tweetsSnap = await getDocs(tweetsRef)
+
+    tweetsSnap.forEach(async (tweet) => {
+        const { authorID, text, likesCount, createdAt } = tweet.data()
+        const authorRef = doc(db, 'authors', authorID)
+        const authorSnap = await getDoc(authorRef)
+        const { name, handler, imageSrc } = authorSnap.data()
+
+        tweets.value.push({
+            author: {
+                name,
+                handler,
+                imageSrc,
+            },
+            content: {
+                text,
+                createdAt: formatDate(createdAt),
+                image: '',
+            },
+            stats: {
+                likesCount,
+                commentsCount: 0,
+                retweetsCount: 0,
+            },
+        })
+    })
+})
 
 onAuthStateChanged(auth, (user) => {
     if (user === null) {
@@ -45,7 +80,7 @@ onAuthStateChanged(auth, (user) => {
                 <TweetBox />
             </div>
 
-            <TweetList />
+            <TweetList :tweets="tweets" />
         </template>
 
         <template #sidebar>
