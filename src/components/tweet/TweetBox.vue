@@ -2,6 +2,9 @@
 import { PhotoIcon, GifIcon, ChartBarIcon, FaceSmileIcon, CalendarDaysIcon, MapPinIcon } from '@heroicons/vue/24/outline'
 import { ref } from 'vue'
 
+const emit = defineEmits(['postTweet'])
+
+const tweetInput = ref('')
 const boxIcons = ref([
     {
         name: 'photo',
@@ -37,7 +40,7 @@ const boxIcons = ref([
 
     <div class="flex-1 px-3 py-1 md:py-3 space-y-4 md:space-y-6">
         <div class="text-[#0f1419] text-base md:text-xl">
-            <input class="w-full outline-none" type="text" placeholder="What's happening?" />
+            <input v-model="tweetInput" class="w-full outline-none" type="text" placeholder="What's happening?" />
         </div>
 
         <div class="flex items-center justify-between">
@@ -47,7 +50,7 @@ const boxIcons = ref([
                 </li>
             </ul>
 
-            <button class="bg-twitter hover:bg-[#1a8cd8] px-4 py-2 rounded-full text-white font-bold text-sm">Tweet</button>
+            <button @click.prevent="emit('postTweet', { tweetContent: tweetInput })" class="bg-twitter hover:bg-[#1a8cd8] px-4 py-2 rounded-full text-white font-bold text-sm">Tweet</button>
         </div>
     </div>
 </template>

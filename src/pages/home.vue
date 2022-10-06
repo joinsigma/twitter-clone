@@ -9,21 +9,22 @@ import { useUser } from '@/stores/user'
 import { formatDate } from '@/utils/date'
 import { SparklesIcon } from '@heroicons/vue/24/outline'
 import { onAuthStateChanged } from 'firebase/auth'
-import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore'
+import { addDoc, collection, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore'
 import { auth, db } from '../../firebase'
 
-const userStore = useUser()
 const tweets = ref([])
+const userStore = useUser()
 const router = useRouter()
 
 onMounted(async () => {
     tweets.value = []
     const tweetsRef = collection(db, 'tweets')
-    const tweetsSnap = await getDocs(tweetsRef)
+    const q = query(tweetsRef, orderBy('createdAt', 'desc'))
+    const tweetsSnap = await getDocs(q)
 
     tweetsSnap.forEach(async (tweet) => {
-        const { authorID, text, createdAt, likes } = tweet.data()
-        const authorRef = doc(db, 'authors', authorID)
+        const { authorEmail, text, createdAt, likes } = tweet.data()
+        const authorRef = doc(db, 'authors', authorEmail)
         const authorSnap = await getDoc(authorRef)
         const { name, handler, imageSrc, email } = authorSnap.data()
 
@@ -82,6 +83,19 @@ const likeTweet = async ({ tweetID, authorEmail }) => {
         likes: tweet.stats.likes,
     })
 }
+
+const postTweet = async ({ tweetContent }) => {
+    const tweetsCollectionRef = collection(db, 'tweets')
+
+    await addDoc(tweetsCollectionRef, {
+        authorEmail: 'yapyeeqiang@gmail.com',
+        createdAt: serverTimestamp(),
+        likes: [],
+        text: tweetContent,
+    })
+
+    window.location.reload()
+}
 </script>
 
 <template>
@@ -96,7 +110,7 @@ const likeTweet = async ({ tweetID, authorEmail }) => {
             </div>
 
             <div class="p-4 flex border-b border-[#eff3f4]">
-                <TweetBox />
+                <TweetBox @postTweet="postTweet" />
             </div>
 
             <TweetList :tweets="tweets" @like="likeTweet" />
