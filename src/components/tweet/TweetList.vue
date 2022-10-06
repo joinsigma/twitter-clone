@@ -1,13 +1,16 @@
 <script setup>
 import { EllipsisHorizontalIcon, ChatBubbleLeftIcon, HeartIcon, ArrowPathRoundedSquareIcon, ArrowUpTrayIcon } from '@heroicons/vue/24/outline'
+import { useUser } from '@/stores/user'
 
-defineProps({
-    tweets: Object,
-})
+const props = defineProps(['tweets'])
+const emit = defineEmits(['like', 'comment', 'retweet'])
+
+const userStore = useUser()
+const hasLiked = (stats) => stats.likes.some((item) => item === userStore.user.email)
 </script>
 
 <template>
-    <div v-for="({ author, content, stats }, index) in tweets" :key="index" class="flex space-x-4 p-4 border-b border-[#eff3f4] hover:bg-black/[0.03] cursor-pointer">
+    <div v-for="({ id, author, content, stats }, index) in tweets" :key="index" class="flex space-x-4 p-4 border-b border-[#eff3f4] hover:bg-black/[0.03] cursor-pointer">
         <div class="h-8 w-8 md:h-12 md:w-12">
             <img class="h-full w-full rounded-full" :src="author.imageSrc" alt="" />
         </div>
@@ -33,21 +36,21 @@ defineProps({
                     <div class="group-hover:bg-[#1d9bf0]/10 group-hover:text-twitter rounded-full p-2 transition-all">
                         <ChatBubbleLeftIcon class="h-4 w-4" />
                     </div>
-                    <span class="text-sm group-hover:text-twitter transition-all">{{ stats.commentsCount }}</span>
+                    <span class="text-sm group-hover:text-twitter transition-all">{{ stats.comments.length }}</span>
                 </div>
 
                 <div class="flex items-center space-x-2 group cursor-pointer">
                     <div class="group-hover:bg-[#00ba7c]/10 group-hover:text-[#00ba7c] rounded-full p-2 transition-all">
                         <ArrowPathRoundedSquareIcon class="h-4 w-4" />
                     </div>
-                    <span class="text-sm group-hover:text-[#00ba7c] transition-all">{{ stats.retweetsCount }}</span>
+                    <span class="text-sm group-hover:text-[#00ba7c] transition-all">{{ stats.retweets.length }}</span>
                 </div>
 
-                <div class="flex items-center space-x-2 group cursor-pointer">
-                    <div class="group-hover:bg-[#f91880]/10 group-hover:text-[#f91880] rounded-full p-2 transition-all">
-                        <HeartIcon class="h-4 w-4" />
+                <div @click.prevent="emit('like', { tweetID: id, authorEmail: author.email })" class="flex items-center space-x-2 group cursor-pointer">
+                    <div :class="[hasLiked(stats) ? 'text-[#f91880]' : 'group-hover:text-[#f91880]', 'group-hover:bg-[#f91880]/10  rounded-full p-2 transition-all']">
+                        <HeartIcon :class="[hasLiked(stats) ? 'fill-[#f91880]' : '', 'h-4 w-4']" />
                     </div>
-                    <span class="text-sm group-hover:text-[#f91880] transition-all">{{ stats.likesCount }}</span>
+                    <span :class="[hasLiked(stats) ? 'text-[#f91880]' : 'group-hover:text-[#f91880]', 'text-sm  transition-all']">{{ stats.likes.length }}</span>
                 </div>
 
                 <div class="flex items-center space-x-2 group cursor-pointer">

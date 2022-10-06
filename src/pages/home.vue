@@ -9,9 +9,10 @@ import { useUser } from '@/stores/user'
 import { formatDate } from '@/utils/date'
 import { SparklesIcon } from '@heroicons/vue/24/outline'
 import { onAuthStateChanged } from 'firebase/auth'
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore'
 import { auth, db } from '../../firebase'
 
+const userStore = useUser()
 const tweets = ref([])
 const router = useRouter()
 
@@ -21,16 +22,18 @@ onMounted(async () => {
     const tweetsSnap = await getDocs(tweetsRef)
 
     tweetsSnap.forEach(async (tweet) => {
-        const { authorID, text, likesCount, createdAt } = tweet.data()
+        const { authorID, text, createdAt, likes } = tweet.data()
         const authorRef = doc(db, 'authors', authorID)
         const authorSnap = await getDoc(authorRef)
-        const { name, handler, imageSrc } = authorSnap.data()
+        const { name, handler, imageSrc, email } = authorSnap.data()
 
         tweets.value.push({
+            id: tweet.id,
             author: {
                 name,
                 handler,
                 imageSrc,
+                email,
             },
             content: {
                 text,
@@ -38,9 +41,9 @@ onMounted(async () => {
                 image: '',
             },
             stats: {
-                likesCount,
-                commentsCount: 0,
-                retweetsCount: 0,
+                likes,
+                comments: [],
+                retweets: [],
             },
         })
     })
@@ -55,7 +58,6 @@ onAuthStateChanged(auth, (user) => {
     }
 
     const { displayName, email, photoURL } = user
-    const userStore = useUser()
 
     userStore.user = {
         name: displayName,
@@ -63,6 +65,23 @@ onAuthStateChanged(auth, (user) => {
         photoURL,
     }
 })
+
+const likeTweet = async ({ tweetID, authorEmail }) => {
+    const tweet = tweets.value.find((tweet) => tweet.id === tweetID)
+    const hasLiked = tweet.stats.likes.includes(authorEmail)
+
+    if (hasLiked) {
+        const authorIndex = tweet.stats.likes.findIndex((authorEmail) => authorEmail === authorEmail)
+        tweet.stats.likes.splice(authorIndex, 1)
+    } else {
+        tweet.stats.likes.push(authorEmail)
+    }
+
+    const tweetRef = doc(db, 'tweets', tweetID)
+    await updateDoc(tweetRef, {
+        likes: tweet.stats.likes,
+    })
+}
 </script>
 
 <template>
@@ -80,7 +99,7 @@ onAuthStateChanged(auth, (user) => {
                 <TweetBox />
             </div>
 
-            <TweetList :tweets="tweets" />
+            <TweetList :tweets="tweets" @like="likeTweet" />
         </template>
 
         <template #sidebar>
