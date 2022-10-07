@@ -19,8 +19,7 @@ const router = useRouter()
 onMounted(async () => {
     tweets.value = []
     const tweetsRef = collection(db, 'tweets')
-    const q = query(tweetsRef, orderBy('createdAt', 'desc'))
-    const tweetsSnap = await getDocs(q)
+    const tweetsSnap = await getDocs(query(tweetsRef, orderBy('createdAt', 'desc')))
 
     tweetsSnap.forEach(async (tweet) => {
         const { authorEmail, text, createdAt, likes } = tweet.data()
@@ -48,6 +47,44 @@ onMounted(async () => {
             },
         })
     })
+
+    const retweetsRef = collection(db, 'retweets')
+    const retweetsSnap = await getDocs(query(retweetsRef, orderBy('createdAt', 'desc')))
+
+    retweetsSnap.forEach(async (retweet) => {
+        const { tweetID, retweetBy } = retweet.data()
+
+        const tweetRef = doc(db, 'tweets', tweetID)
+        const tweetSnap = await getDoc(tweetRef)
+        const { text, createdAt, likes, authorEmail } = tweetSnap.data()
+
+        const authorRef = doc(db, 'authors', authorEmail)
+        const authorSnap = await getDoc(authorRef)
+        const { name, handler, imageSrc, email } = authorSnap.data()
+
+        tweets.value.push({
+            id: tweetID,
+            author: {
+                name,
+                handler,
+                imageSrc,
+                email,
+            },
+            content: {
+                text,
+                createdAt: formatDate(createdAt),
+                image: '',
+            },
+            stats: {
+                likes,
+                comments: [],
+                retweets: [],
+            },
+            retweet: {
+                by: retweetBy,
+            },
+        })
+    })
 })
 
 onAuthStateChanged(auth, (user) => {
@@ -68,19 +105,22 @@ onAuthStateChanged(auth, (user) => {
 })
 
 const likeTweet = async ({ tweetID, authorEmail }) => {
-    const tweet = tweets.value.find((tweet) => tweet.id === tweetID)
-    const hasLiked = tweet.stats.likes.includes(authorEmail)
+    const filteredTweets = tweets.value.filter((tweet) => tweet.id === tweetID)
 
-    if (hasLiked) {
-        const authorIndex = tweet.stats.likes.findIndex((authorEmail) => authorEmail === authorEmail)
-        tweet.stats.likes.splice(authorIndex, 1)
-    } else {
-        tweet.stats.likes.push(authorEmail)
-    }
+    filteredTweets.forEach((tweet) => {
+        const hasLiked = tweet.stats.likes.includes(authorEmail)
+
+        if (hasLiked) {
+            const authorIndex = tweet.stats.likes.findIndex((authorEmail) => authorEmail === authorEmail)
+            tweet.stats.likes.splice(authorIndex, 1)
+        } else {
+            tweet.stats.likes.push(authorEmail)
+        }
+    })
 
     const tweetRef = doc(db, 'tweets', tweetID)
     await updateDoc(tweetRef, {
-        likes: tweet.stats.likes,
+        likes: filteredTweets[0].stats.likes,
     })
 }
 
@@ -92,6 +132,23 @@ const postTweet = async ({ tweetContent }) => {
         createdAt: serverTimestamp(),
         likes: [],
         text: tweetContent,
+        retweet: false,
+    })
+
+    window.location.reload()
+}
+
+const retweet = async ({ tweetID }) => {
+    const hasRetweeted = tweets.value.filter((tweet) => tweet.id === tweetID && tweet?.retweet?.by).length > 0
+
+    if (hasRetweeted) return
+
+    const retweetCollectionRef = collection(db, 'retweets')
+
+    await addDoc(retweetCollectionRef, {
+        tweetID,
+        retweetBy: userStore.user.name,
+        createdAt: serverTimestamp(),
     })
 
     window.location.reload()
@@ -113,7 +170,7 @@ const postTweet = async ({ tweetContent }) => {
                 <TweetBox @postTweet="postTweet" />
             </div>
 
-            <TweetList :tweets="tweets" @like="likeTweet" />
+            <TweetList :tweets="tweets" @like="likeTweet" @retweet="retweet" />
         </template>
 
         <template #sidebar>
