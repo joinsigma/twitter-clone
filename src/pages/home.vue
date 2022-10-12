@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import NavigationLayout from '@/layouts/NavigationLayout.vue'
 import TweetBox from '@/components/tweet/TweetBox.vue'
 import TweetList from '@/components/tweet/TweetList.vue'
@@ -8,13 +7,11 @@ import Sidebar from '@/components/home/Sidebar.vue'
 import { useUser } from '@/stores/user'
 import { formatDate } from '@/utils/date'
 import { SparklesIcon } from '@heroicons/vue/24/outline'
-import { onAuthStateChanged } from 'firebase/auth'
 import { addDoc, collection, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore'
-import { auth, db } from '../../firebase'
+import { db } from '../../firebase'
 
 const tweets = ref([])
 const userStore = useUser()
-const router = useRouter()
 
 onMounted(async () => {
     tweets.value = []
@@ -22,7 +19,7 @@ onMounted(async () => {
     const tweetsSnap = await getDocs(query(tweetsRef, orderBy('createdAt', 'desc')))
 
     tweetsSnap.forEach(async (tweet) => {
-        const { authorEmail, text, createdAt, likes } = tweet.data()
+        const { authorEmail, text, createdAt, likes, comments } = tweet.data()
         const authorRef = doc(db, 'authors', authorEmail)
         const authorSnap = await getDoc(authorRef)
         const { name, handler, imageSrc, email } = authorSnap.data()
@@ -42,7 +39,7 @@ onMounted(async () => {
             },
             stats: {
                 likes,
-                comments: [],
+                comments,
                 retweets: [],
             },
         })
@@ -56,7 +53,10 @@ onMounted(async () => {
 
         const tweetRef = doc(db, 'tweets', tweetID)
         const tweetSnap = await getDoc(tweetRef)
-        const { text, createdAt, likes, authorEmail } = tweetSnap.data()
+
+        const tweetData = tweetSnap.data()
+        if (!tweetData) return
+        const { text, createdAt, likes, authorEmail } = tweetData
 
         const authorRef = doc(db, 'authors', authorEmail)
         const authorSnap = await getDoc(authorRef)
@@ -87,23 +87,6 @@ onMounted(async () => {
     })
 })
 
-onAuthStateChanged(auth, (user) => {
-    if (user === null) {
-        router.push({
-            name: 'Sign In',
-        })
-        return
-    }
-
-    const { displayName, email, photoURL } = user
-
-    userStore.user = {
-        name: displayName,
-        email,
-        photoURL,
-    }
-})
-
 const likeTweet = async ({ tweetID, authorEmail }) => {
     const filteredTweets = tweets.value.filter((tweet) => tweet.id === tweetID)
 
@@ -131,6 +114,7 @@ const postTweet = async ({ tweetContent }) => {
         authorEmail: 'yapyeeqiang@gmail.com',
         createdAt: serverTimestamp(),
         likes: [],
+        comments: [],
         text: tweetContent,
         retweet: false,
     })

@@ -1,12 +1,26 @@
 <script setup>
 import { EllipsisHorizontalIcon, ChatBubbleLeftIcon, HeartIcon, ArrowPathRoundedSquareIcon, ArrowUpTrayIcon } from '@heroicons/vue/24/outline'
 import { useUser } from '@/stores/user'
+import { useRouter } from 'vue-router'
 
 const props = defineProps(['tweets'])
 const emit = defineEmits(['like', 'comment', 'retweet'])
 
+const router = useRouter()
 const userStore = useUser()
 const hasLiked = (stats) => stats.likes.some((item) => item === userStore.user.email)
+
+const openTweet = (tweetID) => {
+    const userHandler = userStore.user.handler
+
+    router.push({
+        name: 'Tweet',
+        params: {
+            tweetID,
+            author: userHandler,
+        },
+    })
+}
 </script>
 
 <template>
@@ -37,7 +51,7 @@ const hasLiked = (stats) => stats.likes.some((item) => item === userStore.user.e
                 </div>
 
                 <div class="flex items-center space-x-16 mt-2 -ml-2">
-                    <div class="flex items-center space-x-2 group cursor-pointer">
+                    <div @click.prevent="openTweet(id)" class="flex items-center space-x-2 group cursor-pointer">
                         <div class="group-hover:bg-[#1d9bf0]/10 group-hover:text-twitter rounded-full p-2 transition-all">
                             <ChatBubbleLeftIcon class="h-4 w-4" />
                         </div>
