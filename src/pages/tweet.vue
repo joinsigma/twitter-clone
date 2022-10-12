@@ -1,5 +1,5 @@
 <script setup>
-import { addDoc, collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp } from '@firebase/firestore'
+import { addDoc, collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp, updateDoc } from '@firebase/firestore'
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { db } from '../../firebase'
@@ -18,11 +18,10 @@ const comments = ref([])
 
 const userStore = useUser()
 const route = useRoute()
+const { author, tweetID } = route.params
 const router = useRouter()
 
 onMounted(async () => {
-    const { author, tweetID } = route.params
-
     const tweetRef = doc(db, 'tweets', tweetID)
     const tweetSnap = await getDoc(tweetRef)
     const tweetData = tweetSnap.data()
@@ -37,6 +36,8 @@ onMounted(async () => {
     const commentsRef = collection(db, 'comments')
     const commentsSnap = await getDocs(query(commentsRef, orderBy('createdAt', 'desc')))
     commentsSnap.forEach(async (comment) => {
+        const hasComment = tweetData.comments.includes(comment.id)
+        if (!hasComment) return
         const { authorEmail, text, createdAt } = comment.data()
         const authorRef = doc(db, 'authors', authorEmail)
         const authorSnap = await getDoc(authorRef)
@@ -58,10 +59,15 @@ const hasLiked = (likes) => likes?.some((item) => item === userStore?.user?.emai
 const commentTweet = async ({ text }) => {
     const commentsCollectionRef = collection(db, 'comments')
 
-    await addDoc(commentsCollectionRef, {
+    const response = await addDoc(commentsCollectionRef, {
         authorEmail: userStore?.user?.email,
         createdAt: serverTimestamp(),
         text,
+    })
+
+    const tweetRef = doc(db, 'tweets', tweetID)
+    await updateDoc(tweetRef, {
+        comments: [...tweet.value.comments, response.id],
     })
 
     window.location.reload()

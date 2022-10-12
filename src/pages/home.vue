@@ -20,6 +20,7 @@ onMounted(async () => {
 
     tweetsSnap.forEach(async (tweet) => {
         const { authorEmail, text, createdAt, likes, comments } = tweet.data()
+        console.log(comments)
         const authorRef = doc(db, 'authors', authorEmail)
         const authorSnap = await getDoc(authorRef)
         const { name, handler, imageSrc, email } = authorSnap.data()
